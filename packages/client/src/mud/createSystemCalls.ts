@@ -6,46 +6,51 @@
 import { getComponentValue } from "@latticexyz/recs";
 import { ClientComponents } from "./createClientComponents";
 import { SetupNetworkResult } from "./setupNetwork";
-import { singletonEntity } from "@latticexyz/store-sync/recs";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 export function createSystemCalls(
-  /*
-   * The parameter list informs TypeScript that:
-   *
-   * - The first parameter is expected to be a
-   *   SetupNetworkResult, as defined in setupNetwork.ts
-   *
-   *   Out of this parameter, we only care about two fields:
-   *   - worldContract (which comes from getContract, see
-   *     https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L63-L69).
-   *
-   *   - waitForTransaction (which comes from syncToRecs, see
-   *     https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
-   *
-   * - From the second parameter, which is a ClientComponent,
-   *   we only care about Counter. This parameter comes to use
-   *   through createClientComponents.ts, but it originates in
-   *   syncToRecs
-   *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
-   */
-  { worldContract, waitForTransaction }: SetupNetworkResult,
-  { Counter }: ClientComponents,
+  { playerEntity,worldContract, waitForTransaction }: SetupNetworkResult,
+  { Player , Position}: ClientComponents,
+
 ) {
-  const increment = async () => {
-    /*
-     * Because IncrementSystem
-     * (https://mud.dev/templates/typescript/contracts#incrementsystemsol)
-     * is in the root namespace, `.increment` can be called directly
-     * on the World contract.
-     */
-    const tx = await worldContract.write.increment();
+  const move = async () => {
+    if (!playerEntity) {
+      throw new Error("no player");
+    }
+
+    const position = getComponentValue(Position, playerEntity);
+    if (!position) {
+      console.warn("cannot move without a player position, not yet spawned?");
+      return;
+    }
+
+    const tx = await worldContract.write.move();
     await waitForTransaction(tx);
-    return getComponentValue(Counter, singletonEntity);
+  };
+  const spawn = async (x: number, y: number) => {
+    if (!playerEntity) {
+      throw new Error("no player");
+    }
+
+    const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
+    if (!canSpawn) {
+      throw new Error("already spawned");
+    }
+
+    const tx = await worldContract.write.spawn([x, y]);
+    await waitForTransaction(tx);
+  };
+
+  const rollDice = async () => {
+    // TODO
+    const tx = await worldContract.write.diceRoll();
+    await waitForTransaction(tx);
+    move();
   };
 
   return {
-    increment,
+    rollDice,
+    spawn,
   };
 }
