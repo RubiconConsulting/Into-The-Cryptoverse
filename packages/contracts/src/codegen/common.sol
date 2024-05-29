@@ -9,3 +9,9 @@ enum BlockType {
   Trap,
   Question
 }
+
+enum MonsterCatchResult {
+  Missed,
+  Caught,
+  Fled
+}

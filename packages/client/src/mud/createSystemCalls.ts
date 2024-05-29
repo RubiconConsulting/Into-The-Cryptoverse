@@ -6,13 +6,13 @@
 import { getComponentValue } from "@latticexyz/recs";
 import { ClientComponents } from "./createClientComponents";
 import { SetupNetworkResult } from "./setupNetwork";
+import { MonsterCatchResult } from "../monsterCatchResult";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 export function createSystemCalls(
   { playerEntity,worldContract, waitForTransaction }: SetupNetworkResult,
-  { Player , Position}: ClientComponents,
-
+  { Encounter, Player, Position }: ClientComponents,
 ) {
   const move = async () => {
     if (!playerEntity) {
@@ -41,7 +41,11 @@ export function createSystemCalls(
     const tx = await worldContract.write.spawn([x, y]);
     await waitForTransaction(tx);
   };
-
+  const inEncounter = !!getComponentValue(Encounter, playerEntity);
+  if (inEncounter) {
+    console.warn("cannot move while in encounter");
+    return;
+  }
   const rollDice = async () => {
     // TODO
     const tx = await worldContract.write.diceRoll();
@@ -49,8 +53,36 @@ export function createSystemCalls(
     move();
   };
 
+  const throwBall = async () => {
+    const player = playerEntity;
+    if (!player) {
+      throw new Error("no player");
+    }
+ 
+    const encounter = getComponentValue(Encounter, player);
+    if (!encounter) {
+      throw new Error("no encounter");
+    }
+ 
+    const tx = await worldContract.write.throwBall();
+    await waitForTransaction(tx);
+ 
+    const catchAttempt = getComponentValue(MonsterCatchAttempt, player);
+    if (!catchAttempt) {
+      throw new Error("no catch attempt found");
+    }
+ 
+    return catchAttempt.result as MonsterCatchResult;
+  };
+
+  const fleeEncounter = async () => {
+    const tx = await worldContract.write.flee();
+    await waitForTransaction(tx);
+  };
   return {
     rollDice,
     spawn,
+    throwBall,
+    fleeEncounter,
   };
 }

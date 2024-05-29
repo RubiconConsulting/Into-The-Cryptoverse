@@ -16,17 +16,17 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-library Dice {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "Dice", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462000000000000000000000000000044696365000000000000000000000000);
+library EncounterTrigger {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "EncounterTrigger", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x74620000000000000000000000000000456e636f756e74657254726967676572);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0004010004000000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0001010001000000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (bytes32)
   Schema constant _keySchema = Schema.wrap(0x002001005f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32)
-  Schema constant _valueSchema = Schema.wrap(0x0004010003000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (bool)
+  Schema constant _valueSchema = Schema.wrap(0x0001010060000000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -43,7 +43,7 @@ library Dice {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](1);
-    fieldNames[0] = "point";
+    fieldNames[0] = "value";
   }
 
   /**
@@ -61,87 +61,87 @@ library Dice {
   }
 
   /**
-   * @notice Get point.
+   * @notice Get value.
    */
-  function getPoint(bytes32 id) internal view returns (uint32 point) {
+  function getValue(bytes32 id) internal view returns (bool value) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Get point.
+   * @notice Get value.
    */
-  function _getPoint(bytes32 id) internal view returns (uint32 point) {
+  function _getValue(bytes32 id) internal view returns (bool value) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Get point.
+   * @notice Get value.
    */
-  function get(bytes32 id) internal view returns (uint32 point) {
+  function get(bytes32 id) internal view returns (bool value) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Get point.
+   * @notice Get value.
    */
-  function _get(bytes32 id) internal view returns (uint32 point) {
+  function _get(bytes32 id) internal view returns (bool value) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Set point.
+   * @notice Set value.
    */
-  function setPoint(bytes32 id, uint32 point) internal {
+  function setValue(bytes32 id, bool value) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
   }
 
   /**
-   * @notice Set point.
+   * @notice Set value.
    */
-  function _setPoint(bytes32 id, uint32 point) internal {
+  function _setValue(bytes32 id, bool value) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
   }
 
   /**
-   * @notice Set point.
+   * @notice Set value.
    */
-  function set(bytes32 id, uint32 point) internal {
+  function set(bytes32 id, bool value) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
   }
 
   /**
-   * @notice Set point.
+   * @notice Set value.
    */
-  function _set(bytes32 id, uint32 point) internal {
+  function _set(bytes32 id, bool value) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = id;
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
   }
 
   /**
@@ -168,8 +168,8 @@ library Dice {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint32 point) internal pure returns (bytes memory) {
-    return abi.encodePacked(point);
+  function encodeStatic(bool value) internal pure returns (bytes memory) {
+    return abi.encodePacked(value);
   }
 
   /**
@@ -178,8 +178,8 @@ library Dice {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(uint32 point) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(point);
+  function encode(bool value) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(value);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -195,5 +195,17 @@ library Dice {
     _keyTuple[0] = id;
 
     return _keyTuple;
+  }
+}
+
+/**
+ * @notice Cast a value to a bool.
+ * @dev Boolean values are encoded as uint8 (1 = true, 0 = false), but Solidity doesn't allow casting between uint8 and bool.
+ * @param value The uint8 value to convert.
+ * @return result The boolean value.
+ */
+function _toBool(uint8 value) pure returns (bool result) {
+  assembly {
+    result := value
   }
 }

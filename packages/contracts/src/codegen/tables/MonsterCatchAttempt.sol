@@ -16,17 +16,20 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-library Dice {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "Dice", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462000000000000000000000000000044696365000000000000000000000000);
+// Import user types
+import { MonsterCatchResult } from "./../common.sol";
+
+library MonsterCatchAttempt {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "MonsterCatchAtte", typeId: RESOURCE_OFFCHAIN_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x6f7400000000000000000000000000004d6f6e73746572436174636841747465);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0004010004000000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0001010001000000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (bytes32)
   Schema constant _keySchema = Schema.wrap(0x002001005f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32)
-  Schema constant _valueSchema = Schema.wrap(0x0004010003000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint8)
+  Schema constant _valueSchema = Schema.wrap(0x0001010000000000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -34,7 +37,7 @@ library Dice {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "id";
+    keyNames[0] = "encounter";
   }
 
   /**
@@ -43,7 +46,7 @@ library Dice {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](1);
-    fieldNames[0] = "point";
+    fieldNames[0] = "result";
   }
 
   /**
@@ -61,95 +64,82 @@ library Dice {
   }
 
   /**
-   * @notice Get point.
+   * @notice Set result.
    */
-  function getPoint(bytes32 id) internal view returns (uint32 point) {
+  function setResult(bytes32 encounter, MonsterCatchResult result) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
+    _keyTuple[0] = encounter;
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(uint8(result)), _fieldLayout);
   }
 
   /**
-   * @notice Get point.
+   * @notice Set result.
    */
-  function _getPoint(bytes32 id) internal view returns (uint32 point) {
+  function _setResult(bytes32 encounter, MonsterCatchResult result) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
+    _keyTuple[0] = encounter;
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(uint8(result)), _fieldLayout);
   }
 
   /**
-   * @notice Get point.
+   * @notice Set the full data using individual values.
    */
-  function get(bytes32 id) internal view returns (uint32 point) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
+  function set(bytes32 encounter, MonsterCatchResult result) internal {
+    bytes memory _staticData = encodeStatic(result);
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
+
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = encounter;
+
+    StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
 
   /**
-   * @notice Get point.
+   * @notice Set the full data using individual values.
    */
-  function _get(bytes32 id) internal view returns (uint32 point) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
+  function _set(bytes32 encounter, MonsterCatchResult result) internal {
+    bytes memory _staticData = encodeStatic(result);
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
+
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = encounter;
+
+    StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
 
   /**
-   * @notice Set point.
+   * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function setPoint(bytes32 id, uint32 point) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
-
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
+  function decodeStatic(bytes memory _blob) internal pure returns (MonsterCatchResult result) {
+    result = MonsterCatchResult(uint8(Bytes.getBytes1(_blob, 0)));
   }
 
   /**
-   * @notice Set point.
+   * @notice Decode the tightly packed blobs using this table's field layout.
+   * @param _staticData Tightly packed static fields.
+   *
+   *
    */
-  function _setPoint(bytes32 id, uint32 point) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
-
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
-  }
-
-  /**
-   * @notice Set point.
-   */
-  function set(bytes32 id, uint32 point) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
-
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
-  }
-
-  /**
-   * @notice Set point.
-   */
-  function _set(bytes32 id, uint32 point) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
-
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((point)), _fieldLayout);
+  function decode(
+    bytes memory _staticData,
+    EncodedLengths,
+    bytes memory
+  ) internal pure returns (MonsterCatchResult result) {
+    (result) = decodeStatic(_staticData);
   }
 
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(bytes32 id) internal {
+  function deleteRecord(bytes32 encounter) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
+    _keyTuple[0] = encounter;
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -157,9 +147,9 @@ library Dice {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(bytes32 id) internal {
+  function _deleteRecord(bytes32 encounter) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
+    _keyTuple[0] = encounter;
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -168,8 +158,8 @@ library Dice {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint32 point) internal pure returns (bytes memory) {
-    return abi.encodePacked(point);
+  function encodeStatic(MonsterCatchResult result) internal pure returns (bytes memory) {
+    return abi.encodePacked(result);
   }
 
   /**
@@ -178,8 +168,8 @@ library Dice {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(uint32 point) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(point);
+  function encode(MonsterCatchResult result) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(result);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -190,9 +180,9 @@ library Dice {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(bytes32 id) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(bytes32 encounter) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = id;
+    _keyTuple[0] = encounter;
 
     return _keyTuple;
   }

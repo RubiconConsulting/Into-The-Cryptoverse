@@ -21,12 +21,12 @@ library MapConfig {
   ResourceId constant _tableId = ResourceId.wrap(0x746200000000000000000000000000004d6170436f6e66696700000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0008020104040000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0008020204040000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of ()
   Schema constant _keySchema = Schema.wrap(0x0000000000000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32, uint32, bytes)
-  Schema constant _valueSchema = Schema.wrap(0x000802010303c400000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint32, uint32, bytes, bytes)
+  Schema constant _valueSchema = Schema.wrap(0x000802020303c4c4000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -41,10 +41,11 @@ library MapConfig {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
+    fieldNames = new string[](4);
     fieldNames[0] = "width";
     fieldNames[1] = "height";
     fieldNames[2] = "terrain";
+    fieldNames[3] = "pathIndex";
   }
 
   /**
@@ -286,9 +287,157 @@ library MapConfig {
   }
 
   /**
+   * @notice Get pathIndex.
+   */
+  function getPathIndex() internal view returns (bytes memory pathIndex) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 1);
+    return (bytes(_blob));
+  }
+
+  /**
+   * @notice Get pathIndex.
+   */
+  function _getPathIndex() internal view returns (bytes memory pathIndex) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 1);
+    return (bytes(_blob));
+  }
+
+  /**
+   * @notice Set pathIndex.
+   */
+  function setPathIndex(bytes memory pathIndex) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreSwitch.setDynamicField(_tableId, _keyTuple, 1, bytes((pathIndex)));
+  }
+
+  /**
+   * @notice Set pathIndex.
+   */
+  function _setPathIndex(bytes memory pathIndex) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreCore.setDynamicField(_tableId, _keyTuple, 1, bytes((pathIndex)));
+  }
+
+  /**
+   * @notice Get the length of pathIndex.
+   */
+  function lengthPathIndex() internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 1);
+    unchecked {
+      return _byteLength / 1;
+    }
+  }
+
+  /**
+   * @notice Get the length of pathIndex.
+   */
+  function _lengthPathIndex() internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 1);
+    unchecked {
+      return _byteLength / 1;
+    }
+  }
+
+  /**
+   * @notice Get an item of pathIndex.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function getItemPathIndex(uint256 _index) internal view returns (bytes memory) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    unchecked {
+      bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 1, _index * 1, (_index + 1) * 1);
+      return (bytes(_blob));
+    }
+  }
+
+  /**
+   * @notice Get an item of pathIndex.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function _getItemPathIndex(uint256 _index) internal view returns (bytes memory) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    unchecked {
+      bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 1, _index * 1, (_index + 1) * 1);
+      return (bytes(_blob));
+    }
+  }
+
+  /**
+   * @notice Push a slice to pathIndex.
+   */
+  function pushPathIndex(bytes memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 1, bytes((_slice)));
+  }
+
+  /**
+   * @notice Push a slice to pathIndex.
+   */
+  function _pushPathIndex(bytes memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreCore.pushToDynamicField(_tableId, _keyTuple, 1, bytes((_slice)));
+  }
+
+  /**
+   * @notice Pop a slice from pathIndex.
+   */
+  function popPathIndex() internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 1, 1);
+  }
+
+  /**
+   * @notice Pop a slice from pathIndex.
+   */
+  function _popPathIndex() internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreCore.popFromDynamicField(_tableId, _keyTuple, 1, 1);
+  }
+
+  /**
+   * @notice Update a slice of pathIndex at `_index`.
+   */
+  function updatePathIndex(uint256 _index, bytes memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    unchecked {
+      bytes memory _encoded = bytes((_slice));
+      StoreSwitch.spliceDynamicData(_tableId, _keyTuple, 1, uint40(_index * 1), uint40(_encoded.length), _encoded);
+    }
+  }
+
+  /**
+   * @notice Update a slice of pathIndex at `_index`.
+   */
+  function _updatePathIndex(uint256 _index, bytes memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    unchecked {
+      bytes memory _encoded = bytes((_slice));
+      StoreCore.spliceDynamicData(_tableId, _keyTuple, 1, uint40(_index * 1), uint40(_encoded.length), _encoded);
+    }
+  }
+
+  /**
    * @notice Get the full data.
    */
-  function get() internal view returns (uint32 width, uint32 height, bytes memory terrain) {
+  function get() internal view returns (uint32 width, uint32 height, bytes memory terrain, bytes memory pathIndex) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
@@ -302,7 +451,7 @@ library MapConfig {
   /**
    * @notice Get the full data.
    */
-  function _get() internal view returns (uint32 width, uint32 height, bytes memory terrain) {
+  function _get() internal view returns (uint32 width, uint32 height, bytes memory terrain, bytes memory pathIndex) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
@@ -316,11 +465,11 @@ library MapConfig {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint32 width, uint32 height, bytes memory terrain) internal {
+  function set(uint32 width, uint32 height, bytes memory terrain, bytes memory pathIndex) internal {
     bytes memory _staticData = encodeStatic(width, height);
 
-    EncodedLengths _encodedLengths = encodeLengths(terrain);
-    bytes memory _dynamicData = encodeDynamic(terrain);
+    EncodedLengths _encodedLengths = encodeLengths(terrain, pathIndex);
+    bytes memory _dynamicData = encodeDynamic(terrain, pathIndex);
 
     bytes32[] memory _keyTuple = new bytes32[](0);
 
@@ -330,11 +479,11 @@ library MapConfig {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint32 width, uint32 height, bytes memory terrain) internal {
+  function _set(uint32 width, uint32 height, bytes memory terrain, bytes memory pathIndex) internal {
     bytes memory _staticData = encodeStatic(width, height);
 
-    EncodedLengths _encodedLengths = encodeLengths(terrain);
-    bytes memory _dynamicData = encodeDynamic(terrain);
+    EncodedLengths _encodedLengths = encodeLengths(terrain, pathIndex);
+    bytes memory _dynamicData = encodeDynamic(terrain, pathIndex);
 
     bytes32[] memory _keyTuple = new bytes32[](0);
 
@@ -356,13 +505,19 @@ library MapConfig {
   function decodeDynamic(
     EncodedLengths _encodedLengths,
     bytes memory _blob
-  ) internal pure returns (bytes memory terrain) {
+  ) internal pure returns (bytes memory terrain, bytes memory pathIndex) {
     uint256 _start;
     uint256 _end;
     unchecked {
       _end = _encodedLengths.atIndex(0);
     }
     terrain = (bytes(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
+
+    _start = _end;
+    unchecked {
+      _end += _encodedLengths.atIndex(1);
+    }
+    pathIndex = (bytes(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
   }
 
   /**
@@ -375,10 +530,10 @@ library MapConfig {
     bytes memory _staticData,
     EncodedLengths _encodedLengths,
     bytes memory _dynamicData
-  ) internal pure returns (uint32 width, uint32 height, bytes memory terrain) {
+  ) internal pure returns (uint32 width, uint32 height, bytes memory terrain, bytes memory pathIndex) {
     (width, height) = decodeStatic(_staticData);
 
-    (terrain) = decodeDynamic(_encodedLengths, _dynamicData);
+    (terrain, pathIndex) = decodeDynamic(_encodedLengths, _dynamicData);
   }
 
   /**
@@ -411,10 +566,13 @@ library MapConfig {
    * @notice Tightly pack dynamic data lengths using this table's schema.
    * @return _encodedLengths The lengths of the dynamic fields (packed into a single bytes32 value).
    */
-  function encodeLengths(bytes memory terrain) internal pure returns (EncodedLengths _encodedLengths) {
+  function encodeLengths(
+    bytes memory terrain,
+    bytes memory pathIndex
+  ) internal pure returns (EncodedLengths _encodedLengths) {
     // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
     unchecked {
-      _encodedLengths = EncodedLengthsLib.pack(bytes(terrain).length);
+      _encodedLengths = EncodedLengthsLib.pack(bytes(terrain).length, bytes(pathIndex).length);
     }
   }
 
@@ -422,8 +580,8 @@ library MapConfig {
    * @notice Tightly pack dynamic (variable length) data using this table's schema.
    * @return The dynamic data, encoded into a sequence of bytes.
    */
-  function encodeDynamic(bytes memory terrain) internal pure returns (bytes memory) {
-    return abi.encodePacked(bytes((terrain)));
+  function encodeDynamic(bytes memory terrain, bytes memory pathIndex) internal pure returns (bytes memory) {
+    return abi.encodePacked(bytes((terrain)), bytes((pathIndex)));
   }
 
   /**
@@ -435,12 +593,13 @@ library MapConfig {
   function encode(
     uint32 width,
     uint32 height,
-    bytes memory terrain
+    bytes memory terrain,
+    bytes memory pathIndex
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
     bytes memory _staticData = encodeStatic(width, height);
 
-    EncodedLengths _encodedLengths = encodeLengths(terrain);
-    bytes memory _dynamicData = encodeDynamic(terrain);
+    EncodedLengths _encodedLengths = encodeLengths(terrain, pathIndex);
+    bytes memory _dynamicData = encodeDynamic(terrain, pathIndex);
 
     return (_staticData, _encodedLengths, _dynamicData);
   }
