@@ -187,16 +187,23 @@ contract Rubbicon is VRFConsumerBaseV2Plus {
         uint256[] calldata _randomWords
     ) internal override {
         require(s_requests[_requestId].exists, "request not found");
-        s_requests[_requestId].fulfilled = true;
-        uint256[] memory NewrandomWords;
-
-        for (uint i = 0; i < _randomWords.length; i++) {
-            uint256 d20Value = (_randomWords[i] % 6) + 1;
-            NewrandomWords[i] = d20Value;
+        
+        // Create a new array to store the adjusted random words
+        uint256[] memory adjustedRandomWords = new uint256[](_randomWords.length);
+        
+        // Adjust each random word to be between 1 and 6
+        for (uint256 i = 0; i < _randomWords.length; i++) {
+            adjustedRandomWords[i] = (_randomWords[i] % 6) + 1;
         }
-
-        s_requests[_requestId].randomWords = NewrandomWords;
-        emit RequestFulfilled(_requestId, NewrandomWords);
+        
+        // Mark the request as fulfilled
+        s_requests[_requestId].fulfilled = true;
+        
+        // Store the adjusted random words
+        s_requests[_requestId].randomWords = adjustedRandomWords;
+        
+        // Emit an event to signal the request has been fulfilled
+        emit RequestFulfilled(_requestId, adjustedRandomWords);
     }
 
     /////////////////////VRF//////////////////////////////
@@ -204,3 +211,13 @@ contract Rubbicon is VRFConsumerBaseV2Plus {
     // Other game logic functions...
     //Its only the tokens you earn during the game u can use now
 }
+
+
+// forge create --rpc-url <your_rpc_url> \
+// --constructor-args "ForgeUSD" "FUSD" 18 1000000000000000000000 \
+// --private-key <your_private_key> \
+// --etherscan-api-key <your_etherscan_api_key> \
+// --verify \
+// src/MyToken.sol:MyToken
+
+

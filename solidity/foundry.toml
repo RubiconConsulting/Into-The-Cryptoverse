@@ -2,5 +2,9 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+ETHERSCAN_API_KEY = "7F4ZBBSGKD2TT129JDR91SS8QWSJJZZWV6"
+[etherscan]
+polygon-zkevm-testnet = { key = "${ETHERSCAN_API_KEY}", url = "https://polygon-zkevm-cardona.blockpi.network/v1/rpc/public" }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
